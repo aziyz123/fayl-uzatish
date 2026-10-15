@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0F1116">
+<title>Fayl Uzatish — Telefondan Kompyuterga | O'quv Vositalari</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Archivo+Black&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+  :root{ --stage:#12151C; --stage-2:#1B2029; --paper:#F3EFE4; --gold:#A9813F; --gold-2:#C9A45C; --danger:#D64545; --ok:#4A9A6A; --t1:#E8A33D; --t2:#2E8B8B; --t3:#B23A6B; --t4:#6B8F5C; }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:'Inter', sans-serif; color: var(--paper); background: radial-gradient(circle at 15% 10%, rgba(169,129,63,0.16) 0%, transparent 45%), radial-gradient(circle at 90% 25%, rgba(46,139,139,0.14) 0%, transparent 40%), var(--stage); min-height:100vh; }
+  .wrap{ max-width: 620px; margin:0 auto; padding: 48px 22px 60px; }
+  .hero-row{ display:flex; align-items:center; gap:18px; margin-bottom: 8px; }
+  .cube-logo{ width:52px; height:52px; perspective: 400px; flex-shrink:0; }
+  .cube-logo .cube{ width:100%; height:100%; position:relative; transform-style:preserve-3d; animation: cubeSpin 9s linear infinite; }
+  .cube-logo .face{ position:absolute; width:52px; height:52px; display:flex; align-items:center; justify-content:center; font-family:'Archivo Black', sans-serif; font-size:16px; color: var(--stage); border: 1px solid rgba(0,0,0,0.15); }
+  .cube-logo .f1{ transform: translateZ(26px); background: var(--gold-2); }
+  .cube-logo .f2{ transform: rotateY(180deg) translateZ(26px); background: var(--t3); }
+  .cube-logo .f3{ transform: rotateY(90deg) translateZ(26px); background: var(--t2); }
+  .cube-logo .f4{ transform: rotateY(-90deg) translateZ(26px); background: var(--t1); }
+  .cube-logo .f5{ transform: rotateX(90deg) translateZ(26px); background: var(--t4); }
+  .cube-logo .f6{ transform: rotateX(-90deg) translateZ(26px); background: var(--gold); }
+  @keyframes cubeSpin{ from{ transform: rotateX(0deg) rotateY(0deg); } to{ transform: rotateX(360deg) rotateY(360deg); } }
+  h1{ font-family:'Archivo', sans-serif; font-weight:800; font-size: 26px; margin:0; }
+  .sub{ font-family:'IBM Plex Mono', monospace; font-size: 12px; color: var(--gold-2); margin-top:8px; }
+  .card{ background: linear-gradient(155deg, var(--stage-2) 0%, var(--stage) 100%); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 26px; margin-top: 24px; box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 18px 40px -12px rgba(0,0,0,0.5); }
+  .card h2{ font-family:'Archivo', sans-serif; font-size: 14px; font-weight:700; color: var(--gold-2); margin:0 0 16px 0; }
+  button.primary{ width:100%; padding:16px; border:none; border-radius:10px; background: linear-gradient(135deg, var(--gold-2), var(--gold)); color: var(--stage); font-family:'Archivo', sans-serif; font-weight:800; font-size:15px; cursor:pointer; box-shadow: 0 14px 30px -8px rgba(169,129,63,0.5); }
+  button.secondary{ width:100%; padding:14px; border:1px solid rgba(201,164,92,0.4); border-radius:10px; background: transparent; color: var(--gold-2); font-family:'Archivo', sans-serif; font-weight:700; font-size:14px; cursor:pointer; margin-top:10px; }
+  button.ghost{ width:100%; padding:14px; border:1px dashed rgba(255,255,255,0.2); border-radius:10px; background: rgba(0,0,0,0.2); color: var(--paper); font-family:'Archivo', sans-serif; font-weight:600; font-size:14px; cursor:pointer; margin-top:10px; }
+  .btn-row{ display:flex; flex-direction:column; gap:10px; margin-top:14px; }
+  .qr-row{ display:flex; gap: 20px; align-items:center; flex-wrap:wrap; margin-top: 18px; }
+  #qrcodeBox{ background:#fff; padding: 10px; border-radius: 8px; display:inline-block; line-height:0; }
+  .room-code{ font-family:'Archivo Black', sans-serif; font-size: 26px; color: var(--gold-2); }
+  .status-line{ font-family:'IBM Plex Mono', monospace; font-size: 13px; color: rgba(243,239,228,0.55); margin-top: 14px; }
+  .status-line.ok{ color: var(--ok); } .status-line.err{ color: #ff9d9d; }
+  input[type=file]{ width:100%; padding: 14px; border: 2px dashed rgba(255,255,255,0.2); border-radius:10px; background: rgba(0,0,0,0.25); color: var(--paper); font-family:'Inter',sans-serif; font-size:13px; }
+  .hint{ font-size:12px; color: rgba(243,239,228,0.45); margin-top:10px; line-height:1.5; }
+  .progress-bar-bg{ height:8px; border-radius:4px; background: rgba(255,255,255,0.1); margin-top:16px; overflow:hidden; display:none; }
+  .progress-bar-bg.active{ display:block; }
+  .progress-bar-fill{ height:100%; width:0%; background: linear-gradient(90deg, var(--gold), var(--gold-2)); transition: width 0.15s ease; }
+  .file-result{ display:none; margin-top: 16px; padding: 16px; background: rgba(74,154,106,0.12); border:1px solid var(--ok); border-radius:8px; }
+  .file-result.active{ display:block; }
+  .file-name{ font-weight:700; font-size:14px; word-break: break-all; }
+  .file-meta{ font-family:'IBM Plex Mono', monospace; font-size:11px; color: rgba(243,239,228,0.5); margin-top:4px; }
+  .file-type-badge{ display:inline-block; margin-top:8px; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; background: rgba(201,164,92,0.2); color: var(--gold-2); }
+  .app-footer{ margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); font-family:'IBM Plex Mono', monospace; font-size: 11px; color: rgba(243,239,228,0.4); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  .app-footer a{ color: var(--gold-2); text-decoration:none; }
+  .steps{ font-size:12px; color:rgba(243,239,228,0.45); margin-top:12px; line-height:1.6; } .steps b{ color: var(--gold-2); }
+  .divider{ display:flex; align-items:center; gap:12px; margin: 20px 0 8px; font-size:11px; color: rgba(243,239,228,0.35); font-family:'IBM Plex Mono', monospace; }
+  .divider::before, .divider::after{ content:''; flex:1; height:1px; background: rgba(255,255,255,0.08); }
+  #scannerBox{ display:none; margin-top:16px; border-radius:12px; overflow:hidden; background:#000; } #scannerBox.active{ display:block; } #qr-reader{ width:100%; }
+  .viewer-overlay{ display:none; position:fixed; inset:0; z-index:1000; background:#0a0a0c; flex-direction:column; } .viewer-overlay.active{ display:flex; }
+  .viewer-toolbar{ display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:rgba(0,0,0,0.7); color:#fff; }
+  .viewer-toolbar .title{ font-size:13px; font-weight:600; max-width:60%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .viewer-toolbar button{ background:rgba(255,255,255,0.12); border:none; color:#fff; padding:8px 14px; border-radius:8px; font-size:13px; cursor:pointer; }
+  .viewer-body{ flex:1; display:flex; align-items:center; justify-content:center; overflow:auto; padding:12px; }
+  .viewer-body img{ max-width:100%; max-height:100%; object-fit:contain; border-radius:4px; }
+  .viewer-body iframe{ width:100%; height:100%; border:none; background:#fff; }
+  .viewer-hint{ text-align:center; color:rgba(255,255,255,0.5); font-size:13px; padding:20px; }
+  .mode-tabs{ display:flex; gap:8px; margin-top:24px; }
+  .mode-tab{ flex:1; padding:12px; text-align:center; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); font-family:'Archivo', sans-serif; font-weight:700; font-size:13px; color: rgba(243,239,228,0.6); cursor:pointer; }
+  .mode-tab.active{ background: linear-gradient(135deg, rgba(201,164,92,0.25), rgba(169,129,63,0.15)); border-color: rgba(201,164,92,0.5); color: var(--gold-2); }
+</style>
+</head>
+<body>
+<div id="homeScreen" class="wrap">
+  <div class="hero-row">
+    <div class="cube-logo"><div class="cube">
+      <div class="face f1">FU</div><div class="face f2">FU</div><div class="face f3">FU</div>
+      <div class="face f4">FU</div><div class="face f5">FU</div><div class="face f6">FU</div>
+    </div></div>
+    <div><h1>Fayl Uzatish</h1><div class="sub">Telefondan kompyuterga · 200 MB gacha</div></div>
+  </div>
+  <div class="mode-tabs">
+    <div class="mode-tab active" id="tabComputer" onclick="showMode('computer')">💻 Kompyuter</div>
+    <div class="mode-tab" id="tabPhone" onclick="showMode('phone')">📱 Telefon</div>
+  </div>
+  <div id="computerPanel">
+    <div class="card">
+      <h2>1 · Xona oching</h2>
+      <button class="primary" id="openRoomBtn">Xona ochish</button>
+      <div id="roomBox" style="display:none;">
+        <div class="qr-row">
+          <div id="qrcodeBox"></div>
+          <div><div class="room-code" id="roomCodeDisplay"></div><div class="hint">Telefon bilan shu QR kodni skanerlang</div></div>
+        </div>
+        <div class="steps"><b>Qanday ishlaydi:</b><br>1. Telefonda shu sahifani oching → «Telefon»<br>2. QR skanerlang<br>3. Fayl tanlang — internet orqali keladi (bir xil Wi‑Fi shart emas)</div>
+        <div class="status-line" id="statusLine">Fayl kutilmoqda...</div>
+        <div class="progress-bar-bg" id="recvProgressBg"><div class="progress-bar-fill" id="recvProgressFill"></div></div>
+        <div class="file-result" id="fileResult">
+          <div class="file-name" id="fileName"></div>
+          <div class="file-meta" id="fileMeta"></div>
+          <div class="file-type-badge" id="fileTypeBadge"></div>
+          <div class="btn-row" id="actionButtons"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="phonePanel" style="display:none;">
+    <div class="card">
+      <h2>QR skanerlash</h2>
+      <p class="hint" style="margin-top:0; margin-bottom:14px;">Kompyuterdagi QR kodni kamerangiz bilan o'qing.</p>
+      <button class="primary" id="startScanBtn">📷 QR skanerlashni boshlash</button>
+      <button class="secondary" id="stopScanBtn" style="display:none;">Skanerlashni to'xtatish</button>
+      <div id="scannerBox"><div id="qr-reader"></div></div>
+      <div class="status-line" id="scanStatus"></div>
+      <div class="divider">yoki</div>
+      <p class="hint" style="margin-top:0;">Xona kodini qo'lda kiriting:</p>
+      <input type="text" id="manualCode" placeholder="Masalan: 4832" maxlength="6" style="width:100%; padding:14px; border-radius:10px; border:1px solid rgba(255,255,255,0.15); background:rgba(0,0,0,0.3); color:var(--paper); font-size:18px; letter-spacing:4px; text-align:center; font-family:'Archivo',sans-serif; margin-top:8px;">
+      <button class="ghost" id="manualJoinBtn" style="margin-top:12px;">Xonaga kirish</button>
+    </div>
+  </div>
+  <div class="app-footer">
+    <span>Ushbu ilova <a href="https://t.me/byaziyz" target="_blank" rel="noopener">@byaziyz</a> tomonidan yaratilgan</span>
+    <span><a href="/">← Bosh sahifa</a></span>
+  </div>
+</div>
+<div id="sendScreen" class="wrap" style="display:none;">
+  <div class="hero-row">
+    <div class="cube-logo"><div class="cube">
+      <div class="face f1">FU</div><div class="face f2">FU</div><div class="face f3">FU</div>
+      <div class="face f4">FU</div><div class="face f5">FU</div><div class="face f6">FU</div>
+    </div></div>
+    <div><h1>Fayl yuborish</h1><div class="sub" id="sendRoomLabel">Xona: ----</div></div>
+  </div>
+  <div class="card">
+    <h2>Faylni tanlang</h2>
+    <input type="file" id="fileInput" accept="image/*,.pdf,.pptx,.ppt,.doc,.docx,.xls,.xlsx,.zip,.txt,.mp4,.mp3">
+    <div class="hint">Rasm, PDF, PPTX, video va boshqalar. To'g'ridan-to'g'ri ulanishda <b style="color:var(--gold-2)">200 MB</b> gacha, zaxira usulida <b style="color:var(--gold-2)">60 MB</b> gacha. Yuborish tugaguncha ekranni o'chirmang va boshqa ilovaga o'tmang.</div>
+    <div class="progress-bar-bg" id="progressBarBg"><div class="progress-bar-fill" id="progressBarFill"></div></div>
+    <div class="status-line" id="sendStatus"></div>
+  </div>
+</div>
+<div class="viewer-overlay" id="imageViewer">
+  <div class="viewer-toolbar"><span class="title" id="imgViewerTitle">Rasm</span><div><button id="imgDownloadBtn">Yuklab olish</button><button id="imgCloseBtn" style="margin-left:8px;">Yopish</button></div></div>
+  <div class="viewer-body"><img id="imgViewerImg" src="" alt="Rasm"></div>
+</div>
+<div class="viewer-overlay" id="pdfViewer">
+  <div class="viewer-toolbar"><span class="title" id="pdfViewerTitle">PDF</span><div><button id="pdfDownloadBtn">Yuklab olish</button><button id="pdfCloseBtn" style="margin-left:8px;">Yopish</button></div></div>
+  <div class="viewer-body" style="padding:0;"><iframe id="pdfViewerFrame" src=""></iframe></div>
+</div>
+<div class="viewer-overlay" id="pptxViewer">
+  <div class="viewer-toolbar"><span class="title" id="pptxViewerTitle">PowerPoint</span><div><button id="pptxCloseBtn">Yopish</button></div></div>
+  <div class="viewer-body"><div class="viewer-hint"><p style="font-size:18px; margin-bottom:12px;">📄 PowerPoint fayli</p><p>Yuklab olib, PowerPoint yoki Google Slides da oching.</p><button class="primary" id="pptxDownloadBtn" style="max-width:280px; margin:24px auto 0; display:block;">Yuklab olish</button></div></div>
+</div>
+<script src="fayl-core.js?v=1"></script>
+<script src="fayl-ui.js?v=1"></script>
+</body>
+</html>
